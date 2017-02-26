@@ -1,0 +1,46 @@
+Similar to the original GoodCodes but tailored exclusively to the Nintendo DS:
+
+[a#]    Alternate (if version info is available it usually will get a v1.x tag instead)
+[f#]    Fixed (included trimmed roms)
+[h#]    Hack
+[h#C]   Hack (header data only, usually the checksum)
+[h#I]   Hack (intro)
+[p#]    Pirate
+[t#]    Trained
+[T-xxx] Translation (older version)
+[T+xxx] Translation (newest version)
+[!] Verified good dump (usually means two distinct groups got the same result)
+
+There's talk of checksums in DS carts not always being correct (it's hard to tell with the scene kiddies though).  If that ends up being true I'll add in two more tags--[x] and [c] for checksum mismatches that are believed vs confirmed to be bad in the original cartridge.
+A proper hack with a name and attributable effect will usually have the tag "(original_rom_name hack)".  Ideally there will never be a pure [h#] because we'll always know what was changed and they'll be properly classified as fixes, checksum/intro hacks, or proper hacks.
+Bad and overdumped roms are not individually tracked owing to some particularly stupid groups insisting on including them in 'full' rom packs that are then compressed not as solid or goodmerged archives but as individual zips.  This is why we can't have nice things, people.
+Overdumps are in theory easy to fix and some 'common' bad dumps might be fixable as well.  Trimmed roms are 'fixable' if the junk data was a consistent pattern.  That's all on the possible features list.
+
+
+The DS had four regions to which the DS is region locked:
+(J) Japan
+(E) United States
+(P) Europe
+(U) Australia
+
+You'll note that's different from the traditional JUE scheme known to ROM hoarders for decades.  So do we stick to a JUEA scheme or do we use what the DS has?  Choices...
+
+It also had some sub-regions, mostly for language purposes:
+(C) China
+(F) France
+(D) Germany
+(H) Netherlands
+(I) Italy
+(O) International
+(K) Korea
+(R) Russia
+(S) Spain
+(V-X) Europe (but with a different code, dunno why)
+
+Internally they are all represented by one byte in the header.
+
+
+
+
+
+
