@@ -15,7 +15,7 @@
 // Structs
 struct nds_cartridge_s
 {
-    unsigned int size; // Must be a multiple of 2, if it isn't this is either homebrew or a trimmed/overdumped rom
+    size_t size; // Must be a multiple of 2, if it isn't this is either homebrew or a trimmed/overdumped rom
     uint8_t * data; // Pointer to blob of data, it should match the headers we have defined elsewhere
 };
 

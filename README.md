@@ -13,3 +13,4 @@ Ideally the software will be data driven; updates to the DBs will be frequent wh
 Resources:
 * http://www.romhacking.net/documents/[469]nds_formats.htm
 * http://dsibrew.org/wiki/DSi_Cartridge_Header
+* https://gbatemp.net/threads/the-ultimate-nintendo-ds-rom-hacking-guide.291274

@@ -5,7 +5,7 @@
 #include <string.h>
 
 #include "cartridge.h"
-#include "libraries/sds.h"
+#include "libraries/sds/sds.h"
 
 // decs
 void checkdir(const char *);
@@ -15,7 +15,6 @@ int main()
     //Find each file.  And analyze it.
     checkdir("./roms");
     checkdir(".");
-
 
     return 0;
 }

@@ -41,10 +41,12 @@ struct __attribute__((__packed__)) ndsHeader_s
     uint32_t FileNameTableLength;
     uint32_t FileAllocationTableOffset;
     uint32_t FileAllocationTableLength;
+
     uint32_t Arm9OverlayOffset;
     uint32_t Arm9OverlayLength;
     uint32_t Arm7OverlayOffset;
     uint32_t Arm7OverlayLength;
+
     uint32_t NormalCardControlRegisterSettings;
     uint32_t SecureCardControlRegisterSettings;
     uint32_t IconBannerOffset;
@@ -59,7 +61,7 @@ struct __attribute__((__packed__)) ndsHeader_s
 
     uint8_t NintendoLogo[156]; // Should always be the same
     uint8_t NintendoLogoCrc[2]; // Should be 0xCF56
-    uint8_t HeaderCrc[2]; // CRC of everything before this
+    uint16_t HeaderCrc; // CRC of everything before this
     uint8_t _reserved3[32];
 };
 struct __attribute__((__packed__)) ndsDsiHeader_s
@@ -88,10 +90,12 @@ struct __attribute__((__packed__)) ndsDsiHeader_s
     uint32_t FileNameTableLength;
     uint32_t FileAllocationTableOffset;
     uint32_t FileAllocationTableLength;
+
     uint32_t Arm9OverlayOffset;
     uint32_t Arm9OverlayLength;
     uint32_t Arm7OverlayOffset;
     uint32_t Arm7OverlayLength;
+
     uint32_t NormalCardControlRegisterSettings;
     uint32_t SecureCardControlRegisterSettings;
     uint32_t IconBannerOffset;

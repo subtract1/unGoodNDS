@@ -1,5 +1,5 @@
-#ifndef _SERIAL_H
-#define _SERIAL_H
+#ifndef _REGION_H
+#define _REGION_H
 
 const char * GetRegionFromCode(const char regionCode);
 const char * GetRegionTextFromCode(const char regionCode);
