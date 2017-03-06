@@ -1,6 +1,6 @@
 /* This defines various structs and headers that make up a NDS rom.
- * We will load our file, search for markers and other identifying
- * characteristics, then cast our byte array to the appropriate struct
+ * We will load our file search for markers and other identifying
+ * characteristics then cast our byte array to the appropriate struct
  * in order to easily extract the important stuff we care about.
  */
 
@@ -15,12 +15,12 @@
 // I'm pretty sure this is all little endian.
 // Were I to target big endian platforms I'd need to do something about that
 // but I'm not so I won't.
-struct __attribute__((__packed__)) ndsHeader_s
+typedef struct __attribute__((__packed__)) ndsHeader_s
 {
     char GameTitle[12]; // This may not be a null terminated string!
-    char GameCode[4]; // Three bytes semi-random, one byte region.
-    uint16_t MakerCode;
-    uint8_t UnitCode; // (00h=NDS, 02h=NDS+DSi, 03h=DSi) (bit1=DSi)
+    char GameCode[4]; // Three bytes semi-random one byte region.
+    char MakerCode[2];
+    uint8_t UnitCode; // (00h=NDS 02h=NDS+DSi 03h=DSi) (bit1=DSi)
     uint8_t EncryptionSeedSelect;
     uint8_t DeviceCapacity;
     uint8_t _reserved1[7];
@@ -63,13 +63,13 @@ struct __attribute__((__packed__)) ndsHeader_s
     uint8_t NintendoLogoCrc[2]; // Should be 0xCF56
     uint16_t HeaderCrc; // CRC of everything before this
     uint8_t _reserved3[32];
-};
-struct __attribute__((__packed__)) ndsDsiHeader_s
+} ndsHeader_t;
+typedef struct __attribute__((__packed__)) ndsDsiHeader_s
 {
-    uint8_t GameTitle[12]; // This may not be a null terminated string!
-    uint8_t GameCode[4]; // Three bytes semi-random, one byte region.
-    uint16_t MakerCode;
-    uint8_t UnitCode; // (00h=NDS, 02h=NDS+DSi, 03h=DSi) (bit1=DSi)
+    char GameTitle[12]; // This may not be a null terminated string!
+    char GameCode[4]; // Three bytes semi-random one byte region.
+    char MakerCode[2];
+    uint8_t UnitCode; // (00h=NDS 02h=NDS+DSi 03h=DSi) (bit1=DSi)
     uint8_t EncryptionSeedSelect;
     uint8_t DeviceCapacity;
     uint8_t _reserved1[7];
@@ -110,7 +110,7 @@ struct __attribute__((__packed__)) ndsDsiHeader_s
 
     uint8_t NintendoLogo[156]; // Should always be the same
     uint8_t NintendoLogoCrc[2]; // Should be 0xCF56
-    uint8_t HeaderCrc[2]; // CRC of everything before this
+    uint16_t HeaderCrc; // CRC of everything before this
     uint8_t _reserved3[32];
 
     uint32_t Mbk1Settings;
@@ -178,10 +178,6 @@ struct __attribute__((__packed__)) ndsDsiHeader_s
     uint8_t _reserved6[2636];
     uint8_t _reserved7[384];
     uint8_t RsaSignature[80];
-};
-
-
-typedef struct ndsHeader_s ndsHeader_t;
-typedef struct ndsDsiHeader_s ndsDsiHeader_t;
+} ndsDsiHeader_t;
 
 #endif

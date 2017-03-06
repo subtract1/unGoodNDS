@@ -1,21 +1,24 @@
 Similar to the original GoodCodes but tailored exclusively to the Nintendo DS:
 
 [a#]    Alternate (if version info is available it usually will get a v1.x tag instead)
-[f#]    Fixed (included trimmed roms)
+[b#]    Bad
+[f#]    Fixed
 [h#]    Hack
 [h#C]   Hack (header data only, usually the checksum)
 [h#I]   Hack (intro)
+[o#]    Overdump
 [p#]    Pirate
 [t#]    Trained
 [T-xxx] Translation (older version)
 [T+xxx] Translation (newest version)
+[z]     Trimmed
 [!] Verified good dump (usually means two distinct groups got the same result)
 
 There's talk of checksums in DS carts not always being correct (it's hard to tell with the scene kiddies though).  If that ends up being true I'll add in two more tags--[x] and [c] for checksum mismatches that are believed vs confirmed to be bad in the original cartridge.
 A proper hack with a name and attributable effect will usually have the tag "(original_rom_name hack)".  Ideally there will never be a pure [h#] because we'll always know what was changed and they'll be properly classified as fixes, checksum/intro hacks, or proper hacks.
-Bad and overdumped roms are not individually tracked owing to some particularly stupid groups insisting on including them in 'full' rom packs that are then compressed not as solid or goodmerged archives but as individual zips.  This is why we can't have nice things, people.
+Bad and overdumped roms are not going to be advertized owing to some particularly stupid groups insisting on including them in 'full' rom packs that are then compressed not as solid or goodmerged archives but as individual zips.  This is why we can't have nice things, people.  I won't include any bad rom unless it's well distributed and I won't let you list all known bad roms in a have or miss list.
 Overdumps are in theory easy to fix and some 'common' bad dumps might be fixable as well.  Trimmed roms are 'fixable' if the junk data was a consistent pattern.  That's all on the possible features list.
-
+Trimmed roms are an odd case as they are valid and the extra data is worthless.  But it also compresses easily and who knows, maybe there's a ROM out there where the devs put an easter egg in it.  I personally prefer untrimmed roms but I can respect those who disagree.  As such I will not consider a trimmed rom invalid, hacked, or even unverified--I'll add a tag to it and if you want a trimmed collection that'll be fine.  I may even add trimming as an option.
 
 The DS had four regions to which the DS is region locked:
 (J) Japan

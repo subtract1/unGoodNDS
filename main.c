@@ -47,12 +47,12 @@ void checkdir(const char * dirname)
             {
                 printf("Processing file %s...\n", filename);
 
-                nds_cartridge_t * cart = load_nds_cartridge(fp);
+                nds_cartridge_t * cart = create_nds_cartridge(fp);
                 char * info = cartridge_info(cart);
-                free_nds_cartridge(cart);
-
                 printf("%s", info);
                 free(info);
+
+                free_nds_cartridge(cart);
             }
         }
     }

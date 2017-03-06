@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "hash_helper.h"
+#include "libraries/crc.h"
 #include "libraries/CryptLib/LibMd5.h"
 #include "libraries/CryptLib/LibSha1.h"
 #include "libraries/CryptLib/LibSha256.h"
@@ -18,57 +19,152 @@ static void byte_to_hex(uint8_t, char *);
 static uint8_t hex_to_byte(const char * hex);
 
 
+// Blob to hash
+uint16_t get_crc16(void * buf, size_t buflen)
+{
+    assert(buf != NULL);
+
+    return crc16(buf, buflen);
+}
+uint32_t get_crc32(void * buf, size_t buflen)
+{
+    assert(buf != NULL);
+
+    return crc32buf(buf, buflen);
+}
+MD5_HASH * get_md5(void * buf, size_t buflen)
+{
+    assert(buf != NULL);
+
+    Md5Context md5Context;
+    MD5_HASH * md5Hash = malloc(sizeof(MD5_HASH));
+
+    Md5Initialise(&md5Context);
+    Md5Update(&md5Context, buf, buflen);
+    Md5Finalise(&md5Context, md5Hash);
+
+    return md5Hash;
+}
+SHA1_HASH * get_sha1(void * buf, size_t buflen)
+{
+    assert(buf != NULL);
+
+    Sha1Context sha1Context;
+    SHA1_HASH * sha1Hash = malloc(sizeof(SHA1_HASH));
+
+    Sha1Initialise(&sha1Context);
+    Sha1Update(&sha1Context, buf, buflen);
+    Sha1Finalise(&sha1Context, sha1Hash);
+
+    return sha1Hash;
+}
+SHA256_HASH * get_sha256(void * buf, size_t buflen)
+{
+    assert(buf != buf);
+
+    Sha256Context sha256Context;
+    SHA256_HASH * sha256Hash = malloc(sizeof(SHA256_HASH));
+
+    Sha256Initialise(&sha256Context);
+    Sha256Update(&sha256Context, buf, buflen);
+    Sha256Finalise(&sha256Context, sha256Hash);
+
+    return sha256Hash;
+}
+SHA512_HASH * get_sha512(void * buf, size_t buflen)
+{
+    assert(buf != NULL);
+
+    Sha512Context sha512Context;
+    SHA512_HASH * sha512Hash = malloc(sizeof(SHA512_HASH));
+
+    Sha512Initialise(&sha512Context);
+    Sha512Update(&sha512Context, buf, buflen);
+    Sha512Finalise(&sha512Context, sha512Hash);
+
+    return sha512Hash;
+}
+
 // Hash to hex string
-char * md5_to_hex(const MD5_HASH * hash)
+void md5_to_hex(const MD5_HASH * hash, char * out_hex)
+{
+    assert(hash != NULL);
+    assert(out_hex != NULL);
+
+    for (int i = 0; i < sizeof(*hash); i++)
+    {
+        byte_to_hex(hash->bytes[i], out_hex + (i * 2));
+    }
+    out_hex[sizeof(*hash)] = '\0';
+}
+void sha1_to_hex(const SHA1_HASH * hash, char * out_hex)
+{
+    assert(hash != NULL);
+    assert(out_hex != NULL);
+
+    for (int i = 0; i < sizeof(*hash); i++)
+    {
+        byte_to_hex(hash->bytes[i], out_hex + (i * 2));
+    }
+    out_hex[sizeof(*hash)] = '\0';
+}
+void sha256_to_hex(const SHA256_HASH * hash, char * out_hex)
+{
+    assert(hash != NULL);
+    assert(out_hex != NULL);
+
+    for (int i = 0; i < sizeof(*hash); i++)
+    {
+        byte_to_hex(hash->bytes[i], out_hex + (i * 2));
+    }
+    out_hex[sizeof(*hash)] = '\0';
+}
+void sha512_to_hex(const SHA512_HASH * hash, char * out_hex)
+{
+    assert(hash != NULL);
+    assert(out_hex != NULL);
+
+    for (int i = 0; i < sizeof(*hash); i++)
+    {
+        byte_to_hex(hash->bytes[i], out_hex + (i * 2));
+    }
+    out_hex[sizeof(*hash)] = '\0';
+}
+
+char * md5_to_hex_str(const MD5_HASH * hash)
 {
     assert(hash != NULL);
     static const size_t strLength = sizeof(*hash) * 2 + 1;
 
     char * ret = malloc(strLength);
-    for (int i = 0; i < sizeof(*hash); i++)
-    {
-        byte_to_hex(hash->bytes[i], ret + (i * 2));
-    }
-
+    md5_to_hex(hash, ret);
     return ret;
 }
-char * sha1_to_hex(const SHA1_HASH * hash)
+char * sha1_to_hex_str(const SHA1_HASH * hash)
 {
     assert(hash != NULL);
     static const size_t strLength = sizeof(*hash) * 2 + 1;
 
     char * ret = malloc(strLength);
-    for (int i = 0; i < sizeof(*hash); i++)
-    {
-        byte_to_hex(hash->bytes[i], ret + (i * 2));
-    }
-
+    sha1_to_hex(hash, ret);
     return ret;
 }
-char * sha256_to_hex(const SHA256_HASH * hash)
+char * sha256_to_hex_str(const SHA256_HASH * hash)
 {
     assert(hash != NULL);
     static const size_t strLength = sizeof(*hash) * 2 + 1;
 
     char * ret = malloc(strLength);
-    for (int i = 0; i < sizeof(*hash); i++)
-    {
-        byte_to_hex(hash->bytes[i], ret + (i * 2));
-    }
-
+    sha256_to_hex(hash, ret);
     return ret;
 }
-char * sha512_to_hex(const SHA512_HASH * hash)
+char * sha512_to_hex_str(const SHA512_HASH * hash)
 {
     assert(hash != NULL);
     static const size_t strLength = sizeof(*hash) * 2 + 1;
 
     char * ret = malloc(strLength);
-    for (int i = 0; i < sizeof(*hash); i++)
-    {
-        byte_to_hex(hash->bytes[i], ret + (i * 2));
-    }
-
+    sha512_to_hex(hash, ret);
     return ret;
 }
 static void byte_to_hex(uint8_t byte, char * dest)
@@ -140,3 +236,4 @@ static uint8_t hex_to_byte(const char * hex)
     ret |= lookupTable[(*(hex+1)) - '0'];
     return ret;
 }
+
