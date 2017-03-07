@@ -8,6 +8,7 @@
 #include "cartridge_filetable.h"
 #include "cartridge_header.h"
 #include "hash_helper.h"
+#include "libraries/asprintf.h"
 #include "libraries/sds/sds.h"
 
 
@@ -53,6 +54,8 @@ void create_filetable(const nds_cartridge_t * cart, nds_cartridge_filetable_t * 
     out_table->NumDirectories = fnt[0].DirectoryCountOrParentID;
     out_table->Files = malloc(sizeof(*(out_table->Files)) * out_table->NumFiles);
     out_table->Directories = malloc(sizeof(*(out_table->Directories)) * out_table->NumDirectories);
+    memset(out_table->Files, 0, sizeof(*(out_table->Files)) * out_table->NumFiles);
+    memset(out_table->Directories, 0, sizeof(*(out_table->Directories)) * out_table->NumDirectories);
 
     // Directories are stored sans name.  We're just building out the
     // hierarchy this pass.
@@ -119,6 +122,24 @@ void create_filetable(const nds_cartridge_t * cart, nds_cartridge_filetable_t * 
         }
     }
 
+    // Some carts have files that don't show up in the names table.
+    // Perhaps they're unused, perhaps they're involved in trickery.
+    // Give them dummy names.
+    for (int file_index = 0; file_index < out_table->NumFiles; file_index++)
+    {
+        nds_cartridge_file_t * cur_file = out_table->Files + file_index;
+        if (cur_file->FileName == NULL)
+        {
+            cur_file->FileID = file_index;
+            cur_file->DirectoryID = 0;
+            asprintf(&(cur_file->FileName), "_unnamed_file_%08d", file_index);
+            cur_file->FileSize = fat[file_index].FileEnd - fat[file_index].FileStart;
+            cur_file->FileHash = get_sha512(cart->Data + fat[file_index].FileStart, cur_file->FileSize);
+        }
+
+        assert(cur_file->FileID == file_index);
+    }
+
     // Now that we have our base names taken care of we need to pop the full names.
     for (int i = 1; i < out_table->NumDirectories; i++)
     {
@@ -139,8 +160,6 @@ void create_filetable(const nds_cartridge_t * cart, nds_cartridge_filetable_t * 
             dir1->FullDirectoryName = malloc(sizeof(char) * name_len);
             sprintf(dir1->FullDirectoryName, "%s/%s", dir2->FullDirectoryName, dir1->DirectoryName);
         }
-
-        i++;
     }
     for (int i = 0; i < out_table->NumFiles; i++)
     {
@@ -167,6 +186,10 @@ nds_cartridge_filetable_t * load_filetable(const nds_cartridge_t * cart)
 
     nds_cartridge_filetable_t * ret = malloc(sizeof(nds_cartridge_filetable_t));
     create_filetable(cart, ret);
+
+    // If there was no FAT/FNT then we have an empty struct.  Return NULL.
+    if (ret->NumFiles == 0)
+        return NULL;
     return ret;
 }
 void clear_filetable(nds_cartridge_filetable_t * table)
@@ -258,14 +281,21 @@ int validate_cartridge_filetable(const nds_cartridge_t * cart)
                 if (cur_offset >= header->FileNameTableOffset + header->FileNameTableLength)
                     return -32;
 
-                int name_len = (cart->Data[cur_offset] & 0x7F);
-                bool is_dir = (cart->Data[cur_offset] & 0x80);
+
+                // This struct is of variable size.  Get the offsets.
+                uint8_t * name_len_ptr = cart->Data + cur_offset;
+                int name_len = ((*name_len_ptr) & 0x7F);
+                bool is_dir = ((*name_len_ptr) & 0x80);
+                uint8_t * name_ptr = name_len_ptr + 1;
+                uint16_t * dir_id_offset = (uint16_t *)(name_ptr + name_len);
+
+                // There's no name count; they are 'null terminated' as it were.
                 if (name_len == 0)
                     break;
 
                 if (is_dir)
                 {
-                    int dir_index = (*(uint16_t *)(cart->Data + cur_offset + name_len + 1)) & 0x0FFF;
+                    int dir_index = (*dir_id_offset) & 0x0FFF;
                     if (dir_index == 0 || dir_index >= num_dirs)
                         return -34;
                 }

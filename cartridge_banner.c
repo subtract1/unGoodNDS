@@ -9,7 +9,6 @@
 #include "cartridge_banner.h"
 #include "cartridge_header.h"
 #include "hash_helper.h"
-#include "libraries/ConvertUTF.h"
 
 
 // The banner structure as it exists on disk
@@ -93,6 +92,10 @@ nds_cartridge_banner_t * load_banner(const nds_cartridge_t * cart)
 
     nds_cartridge_banner_t * ret = malloc(sizeof(nds_cartridge_banner_t));
     create_banner(cart, ret);
+
+    // If we didn't get a valid banner (ie we got our structure zeroed out) then just return null.
+    if (ret->NumBannerNames == 0)
+        return NULL;
     return ret;
 }
 void clear_banner(nds_cartridge_banner_t * banner)
