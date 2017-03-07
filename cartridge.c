@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "cartridge.h"
+#include "cartridge_banner.h"
 #include "cartridge_filetable.h"
 #include "cartridge_header.h"
 #include "hash_helper.h"
@@ -43,6 +44,60 @@ static const uint8_t homebrew_header[] = { 0x2e, 0x00, 0x00, 0xea };
 static const uint8_t homebrew_gamecode[] = { '#', '#', '#', '#' };
 
 
+// Function decs
+const char * validate_cartridge_errmsg(int errno);
+uint16_t get_cart_crc16(const nds_cartridge_t *);
+uint32_t get_cart_crc32(const nds_cartridge_t *);
+MD5_HASH * get_cart_md5(const nds_cartridge_t *);
+SHA1_HASH * get_cart_sha1(const nds_cartridge_t *);
+SHA256_HASH * get_cart_sha256(const nds_cartridge_t *);
+SHA512_HASH * get_cart_sha512(const nds_cartridge_t *);
+uint16_t get_trimcart_crc16(const nds_cartridge_t *);
+uint32_t get_trimcart_crc32(const nds_cartridge_t *);
+MD5_HASH * get_trimcart_md5(const nds_cartridge_t *);
+SHA1_HASH * get_trimcart_sha1(const nds_cartridge_t *);
+SHA256_HASH * get_trimcart_sha256(const nds_cartridge_t *);
+SHA512_HASH * get_trimcart_sha512(const nds_cartridge_t *);
+uint16_t get_cart_header_crc16(const nds_cartridge_t *);
+uint32_t get_cart_header_crc32(const nds_cartridge_t *);
+MD5_HASH * get_cart_header_md5(const nds_cartridge_t *);
+SHA1_HASH * get_cart_header_sha1(const nds_cartridge_t *);
+SHA256_HASH * get_cart_header_sha256(const nds_cartridge_t *);
+SHA512_HASH * get_cart_header_sha512(const nds_cartridge_t *);
+uint16_t get_cart_arm9_crc16(const nds_cartridge_t *);
+uint32_t get_cart_arm9_crc32(const nds_cartridge_t *);
+MD5_HASH * get_cart_arm9_md5(const nds_cartridge_t *);
+SHA1_HASH * get_cart_arm9_sha1(const nds_cartridge_t *);
+SHA256_HASH * get_cart_arm9_sha256(const nds_cartridge_t *);
+SHA512_HASH * get_cart_arm9_sha512(const nds_cartridge_t *);
+uint16_t get_cart_arm7_crc16(const nds_cartridge_t *);
+uint32_t get_cart_arm7_crc32(const nds_cartridge_t *);
+MD5_HASH * get_cart_arm7_md5(const nds_cartridge_t *);
+SHA1_HASH * get_cart_arm7_sha1(const nds_cartridge_t *);
+SHA256_HASH * get_cart_arm7_sha256(const nds_cartridge_t *);
+SHA512_HASH * get_cart_arm7_sha512(const nds_cartridge_t *);
+uint16_t get_cart_arm9ovr_crc16(const nds_cartridge_t *);
+uint32_t get_cart_arm9ovr_crc32(const nds_cartridge_t *);
+MD5_HASH * get_cart_arm9ovr_md5(const nds_cartridge_t *);
+SHA1_HASH * get_cart_arm9ovr_sha1(const nds_cartridge_t *);
+SHA256_HASH * get_cart_arm9ovr_sha256(const nds_cartridge_t *);
+SHA512_HASH * get_cart_arm9ovr_sha512(const nds_cartridge_t *);
+uint16_t get_cart_arm7ovr_crc16(const nds_cartridge_t *);
+uint32_t get_cart_arm7ovr_crc32(const nds_cartridge_t *);
+MD5_HASH * get_cart_arm7ovr_md5(const nds_cartridge_t *);
+SHA1_HASH * get_cart_arm7ovr_sha1(const nds_cartridge_t *);
+SHA256_HASH * get_cart_arm7ovr_sha256(const nds_cartridge_t *);
+SHA512_HASH * get_cart_arm7ovr_sha512(const nds_cartridge_t *);
+
+
+void create_cart_hashes(nds_cartridge_t *);
+int validate_cartridge(const nds_cartridge_t *);
+
+
+
+
+
+
 // Init / Destroy
 nds_cartridge_t * create_nds_cartridge(FILE * fp)
 {
@@ -72,6 +127,7 @@ nds_cartridge_t * create_nds_cartridge(FILE * fp)
     if (ret->Status == 0)
     {
         create_cart_hashes(ret);
+        ret->Banner = load_banner(ret);
         ret->FileTable = load_filetable(ret);
     }
 
@@ -89,6 +145,7 @@ void free_nds_cartridge(nds_cartridge_t * cart)
     free(cart->Arm7Hash);
     free(cart->Arm9OverlayHash);
     free(cart->Arm7OverlayHash);
+    free_banner(cart->Banner);
     free_filetable(cart->FileTable);
     free(cart);
 }
@@ -161,8 +218,10 @@ int validate_cartridge(const nds_cartridge_t * cart)
         return -3;
 
     int ret = validate_cartridge_filetable(cart);
-    if (ret < 0)
-        return ret;
+    if (ret < 0) { return ret; }
+
+    ret = validate_cartridge_banner(cart);
+    if (ret < 0) { return ret; }
 
     return 0;
 }
@@ -196,6 +255,8 @@ const char * validate_cartridge_errmsg(int errno)
             return "FNT name has no corresponding FAT index";
         case -35:
             return "FNT has no corresponding FAT index";
+        case -40:
+            return "Banner is located outside of ROM boundaries";
 
         default:
             return "Unknown error";
@@ -489,6 +550,19 @@ char * cartridge_info(const nds_cartridge_t * cart)
         s = sdscatprintf(s, " Header CRC16 (reported):  %04x\n", header->HeaderCrc);
         s = sdscatprintf(s, " Header CRC16 (calc):      %04x\n", cart->HeaderCrc16);
 
+        if (cart->Banner != NULL)
+        {
+            sha512_to_hex(cart->Banner->BannerHash, hash_buffer);
+            s = sdscatprintf(s, " Banner SHA512:       %.32s ... %.8s\n", hash_buffer, hash_buffer+120);
+            s = sdscatprintf(s, " Banner Names:\n");
+            s = sdscatprintf(s, " * %s (J)\n", cart->Banner->BannerNames[cart->Banner->BannerNameIndexes[0]]);
+            s = sdscatprintf(s, " * %s (E)\n", cart->Banner->BannerNames[cart->Banner->BannerNameIndexes[1]]);
+            s = sdscatprintf(s, " * %s (F)\n", cart->Banner->BannerNames[cart->Banner->BannerNameIndexes[2]]);
+            s = sdscatprintf(s, " * %s (G)\n", cart->Banner->BannerNames[cart->Banner->BannerNameIndexes[3]]);
+            s = sdscatprintf(s, " * %s (I)\n", cart->Banner->BannerNames[cart->Banner->BannerNameIndexes[4]]);
+            s = sdscatprintf(s, " * %s (S)\n", cart->Banner->BannerNames[cart->Banner->BannerNameIndexes[5]]);
+            s = sdscatprintf(s, " * %s (C)\n", cart->Banner->BannerNames[cart->Banner->BannerNameIndexes[6]]);
+        }
         if (cart->Arm9Hash != NULL)
         {
             sha512_to_hex(cart->Arm9Hash, hash_buffer);
